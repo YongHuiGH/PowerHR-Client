@@ -81,6 +81,16 @@ const hrSection = [
                         <SupportIcon />
                     </SvgIcon>
                 ),
+                items: [
+                    {
+                        title: 'All Tickets',
+                        path: PATHS.TICKET.ALL,
+                    },
+                    {
+                        title: 'Generate Report',
+                        path: PATHS.TICKET.REPORT,
+                    },
+                ],
             },
         ],
     },

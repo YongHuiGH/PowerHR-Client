@@ -126,6 +126,7 @@ const PATHS = {
         INDEX: '/applicant/tickets',
         SUBMIT: '/applicant/tickets/submit',
         ALL: '/tickets',
+        REPORT: '/tickets/report',
         VIEW: {
             PATH: '/tickets/:id',
             URL: function (id) {

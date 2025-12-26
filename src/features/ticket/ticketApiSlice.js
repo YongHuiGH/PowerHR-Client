@@ -45,6 +45,13 @@ export const ticketApiSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: (result, error, id) => [{ type: 'Ticket', id }, 'Ticket'],
         }),
+        generateTicketReport: builder.mutation({
+            query: (filters) => ({
+                url: '/tickets/report/generate',
+                method: 'POST',
+                body: filters,
+            }),
+        }),
     }),
 });
 
@@ -55,5 +62,6 @@ export const {
     useGetAllTicketsQuery,
     useUpdateTicketMutation,
     useCloseTicketMutation,
+    useGenerateTicketReportMutation,
 } = ticketApiSlice;
 

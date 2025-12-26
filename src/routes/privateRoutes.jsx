@@ -13,6 +13,7 @@ import ViewTicketStatus from '@pages/ticket/ViewTicketStatus';
 import MyTickets from '@pages/ticket/MyTickets';
 import UpdateTicket from '@pages/ticket/UpdateTicket';
 import AllTickets from '@pages/ticket/AllTickets';
+import TicketReport from '@pages/ticket/TicketReport';
 
 const privateRoutes = (
     <Route element={<ProtectedRoute />}>
@@ -77,6 +78,7 @@ const privateRoutes = (
                 <Route path={PATHS.TICKET.VIEW.PATH} element={<ViewTicketStatus />} />
                 <Route path={PATHS.TICKET.UPDATE.PATH} element={<UpdateTicket />} />
                 <Route path={PATHS.TICKET.ALL} element={<AllTickets />} />
+                <Route path={PATHS.TICKET.REPORT} element={<TicketReport />} />
             </Route>
         </Route>
     </Route>
