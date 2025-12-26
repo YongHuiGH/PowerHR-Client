@@ -32,6 +32,20 @@ const applicantSection = [
                     // },
                 ],
             },
+            {
+                subheader: 'Support',
+                title: 'Support Tickets',
+                items: [
+                    {
+                        title: 'My Tickets',
+                        path: PATHS.TICKET.INDEX,
+                    },
+                    {
+                        title: 'Submit Ticket',
+                        path: PATHS.TICKET.SUBMIT,
+                    },
+                ],
+            },
             // {
             //     title: 'Transfer Document',
             //     path: PATHS.JOB.TRANSFER_DOCUMENT,

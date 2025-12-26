@@ -1,6 +1,7 @@
 import PATHS from '@constants/routes/paths';
 import { SvgIcon } from '@mui/material';
 import HomeSmileIcon from '../../icons/untitled-ui/duocolor/home-smile';
+import SupportIcon from '@mui/icons-material/SupportAgent';
 
 const hrSection = [
     {
@@ -71,6 +72,15 @@ const hrSection = [
                         path: PATHS.ANALYTIC.TURNOVER,
                     },
                 ],
+            },
+            {
+                title: 'Support Tickets',
+                path: PATHS.TICKET.ALL,
+                icon: (
+                    <SvgIcon fontSize="small">
+                        <SupportIcon />
+                    </SvgIcon>
+                ),
             },
         ],
     },

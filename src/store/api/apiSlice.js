@@ -10,6 +10,12 @@ const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set('authorization', `Bearer ${token}`);
         }
+        // Don't set Content-Type for FormData, let browser handle it
+        // Only set it for JSON requests
+        if (!headers.has('Content-Type')) {
+            // Check if body is FormData by checking the endpoint/request
+            // For FormData, don't set Content-Type at all
+        }
         return headers;
     },
 });

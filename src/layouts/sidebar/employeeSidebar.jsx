@@ -1,6 +1,7 @@
 import HomeSmileIcon from '../../icons/untitled-ui/duocolor/home-smile';
 import PATHS from '@constants/routes/paths';
 import { SvgIcon } from '@mui/material';
+import SupportIcon from '@mui/icons-material/SupportAgent';
 
 const employeeSection = [
     {
@@ -54,6 +55,15 @@ const employeeSection = [
             {
                 title: 'Transfer Document',
                 path: PATHS.JOB.TRANSFER_DOCUMENT,
+            },
+            {
+                title: 'Support Tickets',
+                path: PATHS.TICKET.ALL,
+                icon: (
+                    <SvgIcon fontSize="small">
+                        <SupportIcon />
+                    </SvgIcon>
+                ),
             },
         ],
     },

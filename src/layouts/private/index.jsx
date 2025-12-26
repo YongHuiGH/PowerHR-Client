@@ -33,13 +33,15 @@ const filterEmployeeSection = (sections, user) => {
 };
 
 const getSections = (user) => {
-    if (user.role === 'Applicant') {
+    const role = user.role?.toLowerCase();
+    
+    if (role === 'applicant') {
         return applicantSection;
-    } else if (user.role === 'Admin') {
+    } else if (role === 'admin') {
         return adminSection;
-    } else if (user.role === 'SysAdmin') {
+    } else if (role === 'sysadmin') {
         return systemAdminSection;
-    } else if (user.role === 'HR') {
+    } else if (role === 'hr') {
         return hrSection;
     } else {
         return filterEmployeeSection(employeeSection, user);

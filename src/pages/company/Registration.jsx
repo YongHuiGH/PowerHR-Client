@@ -31,6 +31,7 @@ const steps = ['Company Details', 'Address', 'Activate'];
 const Registration = () => {
     const [checkCompany, { isLoading: isCheckingCompany, data: companyData }] = useCheckCompanyMutation();
     const [registerCompany, { isLoading: isRegisteringCompany }] = useRegisterCompanyMutation();
+    const [registrationData, setRegistrationData] = useState(null);
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Company name is required'),
@@ -65,7 +66,8 @@ const Registration = () => {
         onSubmit: async (values, helpers) => {
             await registerCompany(values)
                 .unwrap()
-                .then(() => {
+                .then((response) => {
+                    setRegistrationData(response);
                     handleComplete();
                 })
                 .catch((err) => {
@@ -336,14 +338,64 @@ const Registration = () => {
 
                         {steps[activeStep] === 'Activate' && (
                             <Box sx={{ mt: 3 }}>
-                                <Typography variant="body2" textAlign="center">
-                                    Your company has been successfully registered. Please check your email to activate
-                                    your account.
-                                </Typography>
+                                <Stack spacing={3} alignItems="center">
+                                    <CheckCircleIcon color="success" sx={{ fontSize: 60 }} />
+                                    
+                                    <Typography variant="h5" textAlign="center" color="success.main">
+                                        Company Registered Successfully!
+                                    </Typography>
 
-                                <Button variant="contained" sx={{ mt: 2 }} fullWidth href={PATHS.AUTH.LOGIN}>
-                                    Login
-                                </Button>
+                                    <Typography variant="body2" textAlign="center" color="text.secondary">
+                                        Your company has been registered. Below are your login credentials.
+                                    </Typography>
+
+                                    {registrationData?.credentials && (
+                                        <Card sx={{ width: '100%', bgcolor: 'primary.lighter', p: 2 }}>
+                                            <Stack spacing={2}>
+                                                <Typography variant="subtitle2" color="primary.main" fontWeight="bold">
+                                                    Login Credentials
+                                                </Typography>
+                                                
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Email:
+                                                    </Typography>
+                                                    <Typography variant="body1" fontWeight="medium">
+                                                        {registrationData.credentials.email}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Temporary Password:
+                                                    </Typography>
+                                                    <Typography 
+                                                        variant="body1" 
+                                                        fontWeight="bold" 
+                                                        sx={{ 
+                                                            fontFamily: 'monospace',
+                                                            fontSize: '1.2rem',
+                                                            letterSpacing: 2,
+                                                            color: 'error.main'
+                                                        }}
+                                                    >
+                                                        {registrationData.credentials.password}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Alert severity="warning" sx={{ mt: 1 }}>
+                                                    <Typography variant="caption">
+                                                        ⚠️ {registrationData.credentials.message}
+                                                    </Typography>
+                                                </Alert>
+                                            </Stack>
+                                        </Card>
+                                    )}
+
+                                    <Button variant="contained" size="large" fullWidth href={PATHS.AUTH.LOGIN}>
+                                        Go to Login
+                                    </Button>
+                                </Stack>
                             </Box>
                         )}
                     </Box>

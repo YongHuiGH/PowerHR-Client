@@ -8,6 +8,11 @@ import * as Company from '@pages/company';
 import * as User from '@pages/user';
 import * as Job from '@pages/job';
 import * as Admin from '@pages/admin';
+import SubmitTicket from '@pages/ticket/SubmitTicket';
+import ViewTicketStatus from '@pages/ticket/ViewTicketStatus';
+import MyTickets from '@pages/ticket/MyTickets';
+import UpdateTicket from '@pages/ticket/UpdateTicket';
+import AllTickets from '@pages/ticket/AllTickets';
 
 const privateRoutes = (
     <Route element={<ProtectedRoute />}>
@@ -64,6 +69,14 @@ const privateRoutes = (
                 <Route path={PATHS.ANALYTIC.TURNOVER} element={<Company.TurnOver />} />
                 <Route path={PATHS.COMPANY.DOCUMENTLIST} element={<Company.TransferKnowledge />} />
                 <Route path={PATHS.COMPANY.FINAL_SETTLEMENT} element={<Company.FinalSettlement />} />
+            </Route>
+
+            <Route>
+                <Route path={PATHS.TICKET.INDEX} element={<MyTickets />} />
+                <Route path={PATHS.TICKET.SUBMIT} element={<SubmitTicket />} />
+                <Route path={PATHS.TICKET.VIEW.PATH} element={<ViewTicketStatus />} />
+                <Route path={PATHS.TICKET.UPDATE.PATH} element={<UpdateTicket />} />
+                <Route path={PATHS.TICKET.ALL} element={<AllTickets />} />
             </Route>
         </Route>
     </Route>

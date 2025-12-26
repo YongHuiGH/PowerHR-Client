@@ -2,6 +2,7 @@ import PATHS from '@constants/routes/paths';
 import { SvgIcon } from '@mui/material';
 import HomeSmileIcon from '../../icons/untitled-ui/duocolor/home-smile';
 import ActivityIcon from '../../icons/untitled-ui/duocolor/activity';
+import SupportIcon from '@mui/icons-material/SupportAgent';
 
 const adminSection = [
     {
@@ -47,6 +48,15 @@ const adminSection = [
                 icon: (
                     <SvgIcon fontSize="small">
                         <ActivityIcon />
+                    </SvgIcon>
+                ),
+            },
+            {
+                title: 'Support Tickets',
+                path: PATHS.TICKET.ALL,
+                icon: (
+                    <SvgIcon fontSize="small">
+                        <SupportIcon />
                     </SvgIcon>
                 ),
             },

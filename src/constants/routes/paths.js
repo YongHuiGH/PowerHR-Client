@@ -122,6 +122,23 @@ const PATHS = {
             },
         },
     },
+    TICKET: {
+        INDEX: '/applicant/tickets',
+        SUBMIT: '/applicant/tickets/submit',
+        ALL: '/tickets',
+        VIEW: {
+            PATH: '/tickets/:id',
+            URL: function (id) {
+                return `/tickets/${id}`;
+            },
+        },
+        UPDATE: {
+            PATH: '/tickets/:id/update',
+            URL: function (id) {
+                return `/tickets/${id}/update`;
+            },
+        },
+    },
 };
 
 export default PATHS;
