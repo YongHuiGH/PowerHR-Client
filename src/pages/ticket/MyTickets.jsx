@@ -21,6 +21,7 @@ import { useGetUserTicketsQuery } from '@features/ticket/ticketApiSlice';
 import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
 import AddIcon from '@mui/icons-material/Add';
+import PATHS from '@constants/routes/paths';
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -65,6 +66,8 @@ const MyTickets = () => {
     }
 
     const tickets = data?.tickets || [];
+
+    console.log('My Tickets Data:', { tickets, totalTickets: tickets.length });
 
     return (
         <Container maxWidth="lg">
@@ -137,7 +140,15 @@ const MyTickets = () => {
                                             <TableCell>
                                                 <Button
                                                     size="small"
-                                                    onClick={() => navigate(`/applicant/tickets/${ticket.id}`)}
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        console.log('View button clicked!');
+                                                        console.log('Ticket object:', ticket);
+                                                        console.log('Ticket ID:', ticket.id);
+                                                        const url = PATHS.TICKET.VIEW.URL(ticket.id);
+                                                        console.log('Navigating to URL:', url);
+                                                        navigate(url);
+                                                    }}
                                                 >
                                                     View
                                                 </Button>
