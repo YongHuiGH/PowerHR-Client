@@ -34,7 +34,9 @@ import {
   FormLabel,
 } from '@mui/material';
 import { Download, FileDownload } from '@mui/icons-material';
-import { useGenerateTicketReportMutation } from '../../features/ticket/ticketApiSlice';
+// import { useGenerateTicketReportMutation } from '../../features/ticket/ticketApiSlice';
+import { ticketFacade } from '@features/ticket/services/TicketFacade';
+import { ExportFormat } from '@features/ticket/services/export/ReportExporterFactory';
 
 const statusColors = {
   'Pending': 'warning',
@@ -62,7 +64,10 @@ const TicketReport = () => {
   const [reportType, setReportType] = useState('summary'); // 'summary' or 'detailed'
 
   const [reportData, setReportData] = useState(null);
-  const [generateReport, { isLoading, error }] = useGenerateTicketReportMutation();
+  // const [generateReport, { isLoading, error }] = useGenerateTicketReportMutation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('csv');
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -76,79 +81,45 @@ const TicketReport = () => {
 
   const handleGenerateReport = async () => {
     try {
-      const result = await generateReport(filters).unwrap();
+      setIsLoading(true);
+      setError(null);
+      const result = await ticketFacade.generateReport(filters);
       setReportData(result.reportData);
+      setIsLoading(false);
     } catch (err) {
       console.error('Failed to generate report:', err);
+      setError(err);
+      setIsLoading(false);
     }
   };
 
   const handleExportCSV = () => {
-    if (!reportData || !reportData.tickets) return;
-
-    const headers = ['Ticket ID', 'Title', 'Category', 'Priority', 'Status', 'Submitted By', 'Email', 'Created Date', 'Updated Date'];
-    const csvContent = [
-      headers.join(','),
-      ...reportData.tickets.map(ticket => [
-        ticket.ticketId,
-        `"${ticket.title.replace(/"/g, '""')}"`,
-        ticket.category,
-        ticket.priority,
-        ticket.status,
-        `"${ticket.submittedBy}"`,
-        ticket.submittedByEmail,
-        new Date(ticket.createdAt).toLocaleString(),
-        new Date(ticket.updatedAt).toLocaleString(),
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ticket-report-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    setExportSuccess(true);
-    setTimeout(() => setExportSuccess(false), 3000);
+      try {
+          ticketFacade.exportReport(ExportFormat.CSV, reportData);
+          setExportSuccess(true);
+          setTimeout(() => setExportSuccess(false), 3000);
+      } catch (err) {
+          console.error("Export failed", err);
+      }
   };
 
   const handleExportExcel = () => {
-    if (!reportData || !reportData.tickets) return;
-
-    // Create Excel-compatible CSV with UTF-8 BOM
-    const headers = ['Ticket ID', 'Title', 'Category', 'Priority', 'Status', 'Submitted By', 'Email', 'Created Date', 'Updated Date'];
-    const csvContent = [
-      headers.join('\t'),
-      ...reportData.tickets.map(ticket => [
-        ticket.ticketId,
-        ticket.title.replace(/"/g, '""'),
-        ticket.category,
-        ticket.priority,
-        ticket.status,
-        ticket.submittedBy,
-        ticket.submittedByEmail,
-        new Date(ticket.createdAt).toLocaleString(),
-        new Date(ticket.updatedAt).toLocaleString(),
-      ].join('\t'))
-    ].join('\n');
-
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ticket-report-${new Date().toISOString().split('T')[0]}.xls`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    setExportSuccess(true);
-    setTimeout(() => setExportSuccess(false), 3000);
+      try {
+          ticketFacade.exportReport(ExportFormat.EXCEL, reportData);
+          setExportSuccess(true);
+          setTimeout(() => setExportSuccess(false), 3000);
+      } catch (err) {
+          console.error("Export failed", err);
+      }
   };
 
   const handleExportPDF = () => {
-    window.print();
-    setExportSuccess(true);
-    setTimeout(() => setExportSuccess(false), 3000);
+      try {
+          ticketFacade.exportReport(ExportFormat.PDF, reportData);
+          setExportSuccess(true);
+      } catch (err) {
+          console.error("Export failed", err);
+      }
   };
 
   const handleExport = () => {

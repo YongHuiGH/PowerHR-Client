@@ -21,7 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { useSubmitTicketMutation } from '@features/ticket/ticketApiSlice';
+import { ticketFacade } from '@features/ticket/services/TicketFacade';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import PATHS from '@constants/routes/paths';
@@ -35,7 +35,7 @@ const validationSchema = Yup.object().shape({
 
 const SubmitTicket = () => {
     const navigate = useNavigate();
-    const [submitTicket, { isLoading }] = useSubmitTicketMutation();
+    const [isLoading, setIsLoading] = useState(false);
     const { user } = useSelector((state) => state.auth);
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [submittedTicket, setSubmittedTicket] = useState(null);
@@ -78,7 +78,9 @@ const SubmitTicket = () => {
 
                 console.log('Submitting with userId:', user.id || user._id);
 
-                const response = await submitTicket(formData).unwrap();
+                setIsLoading(true);
+                const response = await ticketFacade.submitTicket(formData);
+                setIsLoading(false);
 
                 setSubmittedTicket(response.ticket);
                 setSubmitSuccess(true);
@@ -86,9 +88,10 @@ const SubmitTicket = () => {
                 
                 // Redirect to view ticket status after 2 seconds
                 setTimeout(() => {
-                    navigate(`/applicant/tickets/${response.ticket.id}`);
+                    navigate(PATHS.TICKET.VIEW.URL(response.ticket.id));
                 }, 2000);
             } catch (err) {
+                setIsLoading(false);
                 const { data, error } = err;
                 helpers.setStatus({ success: false });
                 if (data) {
@@ -161,9 +164,11 @@ const SubmitTicket = () => {
                                             onChange={formik.handleChange}
                                             value={formik.values.category}
                                         >
-                                            <MenuItem value="Technical">Technical</MenuItem>
-                                            <MenuItem value="HR">HR</MenuItem>
-                                            <MenuItem value="Administrative">Administrative</MenuItem>
+                                            <MenuItem value="Technical Issue">Technical Issue</MenuItem>
+                                            <MenuItem value="Account">Account</MenuItem>
+                                            <MenuItem value="Payroll">Payroll</MenuItem>
+                                            <MenuItem value="Leave Request">Leave Request</MenuItem>
+                                            <MenuItem value="Benefits">Benefits</MenuItem>
                                             <MenuItem value="Other">Other</MenuItem>
                                         </Select>
                                         {formik.touched.category && formik.errors.category && (
@@ -183,7 +188,7 @@ const SubmitTicket = () => {
                                             <MenuItem value="Low">Low</MenuItem>
                                             <MenuItem value="Medium">Medium</MenuItem>
                                             <MenuItem value="High">High</MenuItem>
-                                            <MenuItem value="Urgent">Urgent</MenuItem>
+                                            <MenuItem value="Critical">Critical</MenuItem>
                                         </Select>
                                     </FormControl>
 

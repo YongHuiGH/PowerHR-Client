@@ -21,8 +21,10 @@ import {
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useGetTicketByIdQuery, useCloseTicketMutation } from '@features/ticket/ticketApiSlice';
+// import { useGetTicketByIdQuery, useCloseTicketMutation } from '@features/ticket/ticketApiSlice';
+import { ticketFacade } from '@features/ticket/services/TicketFacade';
 import { format } from 'date-fns';
+import { useEffect } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
@@ -60,14 +62,35 @@ const getPriorityColor = (priority) => {
 const ViewTicketStatus = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data, error, isLoading } = useGetTicketByIdQuery(id);
-    const [closeTicket, { isLoading: isClosing }] = useCloseTicketMutation();
+    
+    // Facade migration: local state instead of RTK hooks
+    const [ticketData, setTicketData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isClosing, setIsClosing] = useState(false);
+
     const [openCloseDialog, setOpenCloseDialog] = useState(false);
     const [closeError, setCloseError] = useState('');
     
     // Get current user's role
     const user = useSelector((state) => state.auth.user);
     const isAdminOrEmployee = user && (user.role === 'admin' || user.role === 'employee' || user.role === 'hr');
+
+    const fetchTicket = async () => {
+        try {
+            setIsLoading(true);
+            const data = await ticketFacade.getTicketStatus(id);
+            setTicketData(data);
+            setIsLoading(false);
+        } catch (err) {
+            setError(err);
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchTicket();
+    }, [id]);
 
     if (isLoading) {
         return (
@@ -91,7 +114,7 @@ const ViewTicketStatus = () => {
         );
     }
 
-    const ticket = data?.ticket;
+    const ticket = ticketData?.ticket;
 
     if (!ticket) {
         return (
@@ -106,10 +129,14 @@ const ViewTicketStatus = () => {
     const handleCloseTicket = async () => {
         try {
             setCloseError('');
-            await closeTicket(id).unwrap();
+            setIsClosing(true);
+            await ticketFacade.closeTicket(id);
             setOpenCloseDialog(false);
-            // Ticket will auto-refresh due to RTK Query cache invalidation
+            // Refresh ticket data
+            await fetchTicket();
+            setIsClosing(false);
         } catch (err) {
+            setIsClosing(false);
             console.error('Failed to close ticket:', err);
             setCloseError(err?.data?.error || 'Failed to close ticket. Please try again.');
         }

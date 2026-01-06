@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ticketFacade } from '@features/ticket/services/TicketFacade';
 import {
   Box,
   Button,
@@ -20,10 +21,7 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { 
-  useGetTicketByIdQuery, 
-  useUpdateTicketMutation 
-} from '../../features/ticket/ticketApiSlice';
+// Removed RTK Query imports
 
 const validationSchema = Yup.object({
   title: Yup.string()
@@ -59,9 +57,25 @@ const UpdateTicket = () => {
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [ticketData, setTicketData] = useState(null);
+  const [isLoadingTicket, setIsLoadingTicket] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
 
-  const { data: ticketData, isLoading: isLoadingTicket, error: fetchError } = useGetTicketByIdQuery(id);
-  const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+  useEffect(() => {
+     const fetchTicket = async () => {
+         try {
+             setIsLoadingTicket(true);
+             const data = await ticketFacade.getTicketStatus(id);
+             setTicketData(data);
+             setIsLoadingTicket(false);
+         } catch (error) {
+             setFetchError(error);
+             setIsLoadingTicket(false);
+         }
+     };
+     fetchTicket();
+  }, [id]);
 
   const formik = useFormik({
     initialValues: {
@@ -76,9 +90,11 @@ const UpdateTicket = () => {
       try {
         setErrorMessage('');
         setSuccessMessage('');
+        setIsUpdating(true);
 
-        const result = await updateTicket({ id, ...values }).unwrap();
+        const result = await ticketFacade.updateTicket(id, values);
         
+        setIsUpdating(false);
         setSuccessMessage(result.message || 'Ticket updated successfully!');
         
         // Redirect after 2 seconds
@@ -86,6 +102,7 @@ const UpdateTicket = () => {
           navigate(`/tickets/${id}`);
         }, 2000);
       } catch (error) {
+        setIsUpdating(false);
         console.error('Failed to update ticket:', error);
         setErrorMessage(error?.data?.error || 'Failed to update ticket. Please try again.');
       }
