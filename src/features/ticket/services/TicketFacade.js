@@ -1,6 +1,7 @@
 import { store } from '../../../store';
 import { ticketApiSlice } from '../ticketApiSlice';
 import { ReportExporterFactory } from './export/ReportExporterFactory';
+import { NotificationObserver } from '../observers/NotificationObserver';
 
 /**
  * TicketFacade
@@ -8,6 +9,37 @@ import { ReportExporterFactory } from './export/ReportExporterFactory';
  * abstracting the complexity of API calls and other services.
  */
 class TicketFacade {
+    constructor() {
+        this.observers = [];
+        // register default observer
+        this.attach(new NotificationObserver());
+    }
+
+    /**
+     * Attaches an observer to the ticket facade.
+     * @param {Object} observer - The observer to attach.
+     */
+    attach(observer) {
+        this.observers.push(observer);
+    }
+
+    /**
+     * Detaches an observer from the ticket facade.
+     * @param {Object} observer - The observer to detach.
+     */
+    detach(observer) {
+        this.observers = this.observers.filter(obs => obs !== observer);
+    }
+
+    /**
+     * Notifies all observers of a ticket event.
+     * @param {string} eventType - The type of event.
+     * @param {Object} ticket - The ticket data.
+     */
+    notifyObservers(eventType, ticket) {
+        this.observers.forEach(observer => observer.update(eventType, ticket));
+    }
+
     /**
      * Submits a new ticket.
      * @param {Object} ticketDTO - The ticket data transfer object.
@@ -16,6 +48,12 @@ class TicketFacade {
     async submitTicket(ticketDTO) {
         try {
             const result = await store.dispatch(ticketApiSlice.endpoints.submitTicket.initiate(ticketDTO)).unwrap();
+            
+            // Check if result has ticket data to notify
+            if (result && result.ticket) {
+                this.notifyObservers('created', result.ticket);
+            }
+            
             return result;
         } catch (error) {
             console.error("TicketFacade: Failed to submit ticket", error);
@@ -32,6 +70,17 @@ class TicketFacade {
     async updateTicket(ticketId, updateDTO) {
         try {
             const result = await store.dispatch(ticketApiSlice.endpoints.updateTicket.initiate({ id: ticketId, ...updateDTO })).unwrap();
+            
+             // Check if result has ticket data or we need to fetch it
+             // Assuming result structure contains the updated ticket or message
+             // If the API returns the updated ticket:
+             if (result && result.ticket) {
+                 this.notifyObservers('updated', result.ticket);
+             } else {
+                 // Fallback: Notify with partial data or fetch fresh
+                 this.notifyObservers('updated', { id: ticketId, ...updateDTO });
+             }
+
             return result;
         } catch (error) {
             console.error("TicketFacade: Failed to update ticket", error);
@@ -46,7 +95,15 @@ class TicketFacade {
      */
     async closeTicket(ticketId) {
         try {
-            await store.dispatch(ticketApiSlice.endpoints.closeTicket.initiate(ticketId)).unwrap();
+            const result = await store.dispatch(ticketApiSlice.endpoints.closeTicket.initiate(ticketId)).unwrap();
+            
+            // Assuming result contains the closed ticket
+            if (result && result.ticket) {
+                 this.notifyObservers('closed', result.ticket);
+            } else {
+                 this.notifyObservers('closed', { id: ticketId, status: 'Closed' });
+            }
+
         } catch (error) {
             console.error("TicketFacade: Failed to close ticket", error);
             throw error;
