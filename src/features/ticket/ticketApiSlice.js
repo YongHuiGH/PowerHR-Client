@@ -7,7 +7,6 @@ export const ticketApiSlice = apiSlice.injectEndpoints({
                 url: '/tickets',
                 method: 'POST',
                 body: formData,
-                // Don't set Content-Type for FormData, browser will set it automatically with boundary
             }),
             invalidatesTags: ['Ticket'],
         }),
