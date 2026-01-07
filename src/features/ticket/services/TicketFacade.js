@@ -3,11 +3,7 @@ import { ticketApiSlice } from '../ticketApiSlice';
 import { ReportExporterFactory } from './export/ReportExporterFactory';
 import { NotificationObserver } from '../observers/NotificationObserver';
 
-/**
- * TicketFacade
- * Acts as a simplified interface for Ticket related operations,
- * abstracting the complexity of API calls and other services.
- */
+/* TicketFacade */
 class TicketFacade {
     constructor() {
         this.observers = [];
