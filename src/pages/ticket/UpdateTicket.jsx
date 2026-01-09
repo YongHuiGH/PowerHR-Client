@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ticketFacade } from '@features/ticket/services/TicketFacade';
+import { ticketController } from '@features/ticket/services/TicketController';
 import {
   Box,
   Button,
@@ -18,7 +18,10 @@ import {
   Alert,
   CircularProgress,
   Chip,
+  IconButton,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 // Removed RTK Query imports
@@ -61,12 +64,35 @@ const UpdateTicket = () => {
   const [isLoadingTicket, setIsLoadingTicket] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
+  const handleFileChange = (event) => {
+      const files = Array.from(event.target.files);
+      const validFiles = files.filter(file => file.type === 'image/png' || file.type === 'image/jpeg');
+      
+      if (validFiles.length !== files.length) {
+          setErrorMessage('Only PNG and JPG files are allowed');
+          setTimeout(() => setErrorMessage(''), 3000);
+      }
+      
+      if (validFiles.length + selectedFiles.length > 5) {
+          setErrorMessage('Maximum 5 files allowed');
+          setTimeout(() => setErrorMessage(''), 3000);
+          return;
+      }
+
+      setSelectedFiles([...selectedFiles, ...validFiles]);
+  };
+
+  const removeNewFile = (index) => {
+      setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
      const fetchTicket = async () => {
          try {
              setIsLoadingTicket(true);
-             const data = await ticketFacade.getTicketStatus(id);
+             const data = await ticketController.getTicketStatus(id);
              setTicketData(data);
              setIsLoadingTicket(false);
          } catch (error) {
@@ -92,10 +118,22 @@ const UpdateTicket = () => {
         setSuccessMessage('');
         setIsUpdating(true);
 
-        const result = await ticketFacade.updateTicket(id, values);
+        const formData = new FormData();
+        formData.append('title', values.title);
+        formData.append('description', values.description);
+        formData.append('status', values.status);
+        formData.append('priority', values.priority);
+        formData.append('category', values.category);
+
+        selectedFiles.forEach((file) => {
+            formData.append('newAttachments', file);
+        });
+
+        const result = await ticketController.updateTicket(id, formData);
         
         setIsUpdating(false);
         setSuccessMessage(result.message || 'Ticket updated successfully!');
+        setSelectedFiles([]); // Clear new files
         
         // Redirect after 2 seconds
         setTimeout(() => {
@@ -273,6 +311,51 @@ const UpdateTicket = () => {
                     <FormHelperText>{formik.errors.category}</FormHelperText>
                   )}
                 </FormControl>
+
+                 {/* New Attachment Section */}
+                 <Box>
+                     <Button
+                         variant="outlined"
+                         component="label"
+                         startIcon={<AttachFileIcon />}
+                     >
+                         Upload Images (PNG/JPG)
+                         <input
+                             type="file"
+                             hidden
+                             multiple
+                             accept="image/png, image/jpeg"
+                             onChange={handleFileChange}
+                         />
+                     </Button>
+                     <FormHelperText>Max 5 files (PNG, JPG only)</FormHelperText>
+                     
+                     {selectedFiles.length > 0 && (
+                         <Stack spacing={1} sx={{ mt: 2 }}>
+                             {selectedFiles.map((file, index) => (
+                                 <Box
+                                     key={index}
+                                     sx={{
+                                         p: 1,
+                                         border: '1px solid',
+                                         borderColor: 'divider',
+                                         borderRadius: 1,
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'space-between',
+                                     }}
+                                 >
+                                     <Typography variant="body2" noWrap sx={{ maxWidth: '80%' }}>
+                                         {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                                     </Typography>
+                                     <IconButton size="small" onClick={() => removeNewFile(index)} color="error">
+                                         <DeleteIcon />
+                                     </IconButton>
+                                 </Box>
+                             ))}
+                         </Stack>
+                     )}
+                 </Box>
 
                 {ticket?.attachments && ticket.attachments.length > 0 && (
                   <Box>

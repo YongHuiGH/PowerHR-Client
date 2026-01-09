@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 // import { useGetTicketByIdQuery, useCloseTicketMutation } from '@features/ticket/ticketApiSlice';
-import { ticketFacade } from '@features/ticket/services/TicketFacade';
+import { ticketController } from '@features/ticket/services/TicketController';
 import { format } from 'date-fns';
 import { useEffect } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -79,7 +79,7 @@ const ViewTicketStatus = () => {
     const fetchTicket = async () => {
         try {
             setIsLoading(true);
-            const data = await ticketFacade.getTicketStatus(id);
+            const data = await ticketController.getTicketStatus(id);
             setTicketData(data);
             setIsLoading(false);
         } catch (err) {
@@ -130,10 +130,20 @@ const ViewTicketStatus = () => {
         try {
             setCloseError('');
             setIsClosing(true);
-            await ticketFacade.closeTicket(id);
+            const result = await ticketController.closeTicket(id);
             setOpenCloseDialog(false);
-            // Refresh ticket data
-            await fetchTicket();
+            
+            // Update local state with the closed ticket data directly
+            if (result && result.ticket) {
+                setTicketData(prev => ({ 
+                    ...prev, 
+                    ticket: { ...prev.ticket, ...result.ticket } 
+                }));
+            } else {
+                // Fallback if result structure is unexpected
+                 await fetchTicket();
+            }
+            
             setIsClosing(false);
         } catch (err) {
             setIsClosing(false);

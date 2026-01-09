@@ -3,8 +3,8 @@ import { ticketApiSlice } from '../ticketApiSlice';
 import { ReportExporterFactory } from './export/ReportExporterFactory';
 import { NotificationObserver } from '../observers/NotificationObserver';
 
-/* TicketFacade */
-class TicketFacade {
+/* TicketController */
+class TicketController {
     constructor() {
         this.observers = [];
         // register default observer
@@ -12,7 +12,7 @@ class TicketFacade {
     }
 
     /**
-     * Attaches an observer to the ticket facade.
+     * Attaches an observer to the ticket controller.
      * @param {Object} observer - The observer to attach.
      */
     attach(observer) {
@@ -20,7 +20,7 @@ class TicketFacade {
     }
 
     /**
-     * Detaches an observer from the ticket facade.
+     * Detaches an observer from the ticket controller.
      * @param {Object} observer - The observer to detach.
      */
     detach(observer) {
@@ -52,7 +52,7 @@ class TicketFacade {
             
             return result;
         } catch (error) {
-            console.error("TicketFacade: Failed to submit ticket", error);
+            console.error("TicketController: Failed to submit ticket", error);
             throw error;
         }
     }
@@ -65,7 +65,7 @@ class TicketFacade {
      */
     async updateTicket(ticketId, updateDTO) {
         try {
-            const result = await store.dispatch(ticketApiSlice.endpoints.updateTicket.initiate({ id: ticketId, ...updateDTO })).unwrap();
+            const result = await store.dispatch(ticketApiSlice.endpoints.updateTicket.initiate({ id: ticketId, data: updateDTO })).unwrap();
             
              // Check if result has ticket data or we need to fetch it
              // Assuming result structure contains the updated ticket or message
@@ -74,12 +74,14 @@ class TicketFacade {
                  this.notifyObservers('updated', result.ticket);
              } else {
                  // Fallback: Notify with partial data or fetch fresh
-                 this.notifyObservers('updated', { id: ticketId, ...updateDTO });
+                 // Note: If updateDTO is FormData, we can't easily spread it here for notification, 
+                 // but typically the result should contain the ticket.
+                 this.notifyObservers('updated', { id: ticketId });
              }
 
             return result;
         } catch (error) {
-            console.error("TicketFacade: Failed to update ticket", error);
+            console.error("TicketController: Failed to update ticket", error);
             throw error;
         }
     }
@@ -100,8 +102,9 @@ class TicketFacade {
                  this.notifyObservers('closed', { id: ticketId, status: 'Closed' });
             }
 
+            return result;
         } catch (error) {
-            console.error("TicketFacade: Failed to close ticket", error);
+            console.error("TicketController: Failed to close ticket", error);
             throw error;
         }
     }
@@ -117,7 +120,7 @@ class TicketFacade {
             const result = await store.dispatch(ticketApiSlice.endpoints.getTicketById.initiate(ticketId, { forceRefetch: true })).unwrap();
             return result;
         } catch (error) {
-            console.error("TicketFacade: Failed to get ticket status", error);
+            console.error("TicketController: Failed to get ticket status", error);
             throw error;
         }
     }
@@ -132,7 +135,7 @@ class TicketFacade {
             const result = await store.dispatch(ticketApiSlice.endpoints.generateTicketReport.initiate(reportCriteria)).unwrap();
             return result;
         } catch (error) {
-            console.error("TicketFacade: Failed to generate report", error);
+            console.error("TicketController: Failed to generate report", error);
             throw error;
         }
     }
@@ -147,12 +150,12 @@ class TicketFacade {
         try {
             const exporter = ReportExporterFactory.createExporter(format);
             exporter.export(ticketReport);
-            return ticketReport; // Returning the report or some indicator
+            return ticketReport;
         } catch (error) {
-            console.error("TicketFacade: Failed to export report", error);
+            console.error("TicketController: Failed to export report", error);
             throw error;
         }
     }
 }
 
-export const ticketFacade = new TicketFacade();
+export const ticketController = new TicketController();

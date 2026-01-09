@@ -30,7 +30,7 @@ export const ticketApiSlice = apiSlice.injectEndpoints({
             providesTags: ['Ticket'],
         }),
         updateTicket: builder.mutation({
-            query: ({ id, ...data }) => ({
+            query: ({ id, data }) => ({
                 url: `/tickets/${id}`,
                 method: 'PUT',
                 body: data,

@@ -35,7 +35,7 @@ import {
 } from '@mui/material';
 import { Download, FileDownload } from '@mui/icons-material';
 // import { useGenerateTicketReportMutation } from '../../features/ticket/ticketApiSlice';
-import { ticketFacade } from '@features/ticket/services/TicketFacade';
+import { ticketController } from '@features/ticket/services/TicketController';
 import { ExportFormat } from '@features/ticket/services/export/ReportExporterFactory';
 
 const statusColors = {
@@ -83,7 +83,7 @@ const TicketReport = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await ticketFacade.generateReport(filters);
+      const result = await ticketController.generateReport(filters);
       setReportData(result.reportData);
       setIsLoading(false);
     } catch (err) {
@@ -95,17 +95,7 @@ const TicketReport = () => {
 
   const handleExportCSV = () => {
       try {
-          ticketFacade.exportReport(ExportFormat.CSV, reportData);
-          setExportSuccess(true);
-          setTimeout(() => setExportSuccess(false), 3000);
-      } catch (err) {
-          console.error("Export failed", err);
-      }
-  };
-
-  const handleExportExcel = () => {
-      try {
-          ticketFacade.exportReport(ExportFormat.EXCEL, reportData);
+          ticketController.exportReport(ExportFormat.CSV, reportData);
           setExportSuccess(true);
           setTimeout(() => setExportSuccess(false), 3000);
       } catch (err) {
@@ -115,7 +105,7 @@ const TicketReport = () => {
 
   const handleExportPDF = () => {
       try {
-          ticketFacade.exportReport(ExportFormat.PDF, reportData);
+          ticketController.exportReport(ExportFormat.PDF, reportData);
           setExportSuccess(true);
       } catch (err) {
           console.error("Export failed", err);
@@ -127,9 +117,6 @@ const TicketReport = () => {
     switch (selectedFormat) {
       case 'csv':
         handleExportCSV();
-        break;
-      case 'excel':
-        handleExportExcel();
         break;
       case 'pdf':
         handleExportPDF();
@@ -560,11 +547,6 @@ const TicketReport = () => {
                             control={<Radio />} 
                             label="CSV (Comma-Separated Values)" 
                           />
-                          <FormControlLabel 
-                            value="excel" 
-                            control={<Radio />} 
-                            label="Excel (Microsoft Excel Format)" 
-                          />
                         </RadioGroup>
                       </FormControl>
 
@@ -572,7 +554,6 @@ const TicketReport = () => {
                         <Typography variant="caption">
                           <strong>PDF:</strong> Best for printing and sharing<br />
                           <strong>CSV:</strong> Compatible with most spreadsheet applications<br />
-                          <strong>Excel:</strong> Optimized for Microsoft Excel
                         </Typography>
                       </Alert>
                     </Stack>

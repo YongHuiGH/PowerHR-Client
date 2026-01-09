@@ -21,7 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { ticketFacade } from '@features/ticket/services/TicketFacade';
+import { ticketController } from '@features/ticket/services/TicketController';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import PATHS from '@constants/routes/paths';
@@ -79,7 +79,7 @@ const SubmitTicket = () => {
                 console.log('Submitting with userId:', user.id || user._id);
 
                 setIsLoading(true);
-                const response = await ticketFacade.submitTicket(formData);
+                const response = await ticketController.submitTicket(formData);
                 setIsLoading(false);
 
                 setSubmittedTicket(response.ticket);

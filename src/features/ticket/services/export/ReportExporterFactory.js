@@ -1,10 +1,8 @@
 import { PdfReportExporter } from './PdfReportExporter';
-import { ExcelReportExporter } from './ExcelReportExporter';
 import { CsvReportExporter } from './CsvReportExporter';
 
 export const ExportFormat = {
     PDF: 'PDF',
-    EXCEL: 'EXCEL',
     CSV: 'CSV'
 };
 
@@ -19,8 +17,6 @@ export class ReportExporterFactory {
         switch (format) {
             case ExportFormat.PDF:
                 return new PdfReportExporter();
-            case ExportFormat.EXCEL:
-                return new ExcelReportExporter();
             case ExportFormat.CSV:
                 return new CsvReportExporter();
             default:

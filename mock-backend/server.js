@@ -347,7 +347,7 @@ app.get('/tickets', async (req, res) => {
 });
 
 // Update ticket (for admin/employee)
-app.put('/tickets/:id', async (req, res) => {
+app.put('/tickets/:id', upload.array('newAttachments', 5), async (req, res) => {
     try {
         const { title, description, status, priority, category } = req.body;
         
@@ -364,6 +364,18 @@ app.put('/tickets/:id', async (req, res) => {
         if (priority) ticket.priority = priority;
         if (category) ticket.category = category;
 
+        // Add new attachments if any
+        if (req.files && req.files.length > 0) {
+            const newAttachments = req.files.map(file => ({
+                filename: file.filename,
+                originalName: file.originalname,
+                path: `/uploads/${file.filename}`,
+                mimetype: file.mimetype,
+                size: file.size
+            }));
+            ticket.attachments = [...(ticket.attachments || []), ...newAttachments];
+        }
+
         await ticket.save();
 
         console.log(`✅ Ticket updated: ${ticket.ticketId} - ${ticket.title}`);
@@ -377,6 +389,7 @@ app.put('/tickets/:id', async (req, res) => {
                 status: ticket.status,
                 priority: ticket.priority,
                 category: ticket.category,
+                attachments: ticket.attachments,
                 updatedAt: ticket.updatedAt
             }
         });
